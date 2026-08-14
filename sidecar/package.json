@@ -1,0 +1,46 @@
+{
+  "name": "sci-colanode-sidecar",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@colanode/client": "file:../vendor/colanode/packages/client",
+    "@colanode/core": "file:../vendor/colanode/packages/core",
+    "@colanode/crdt": "file:../vendor/colanode/packages/crdt",
+    "@hono/node-server": "^1.14.4",
+    "@tanstack/db": "^0.5.33",
+    "@tiptap/core": "^3.22.1",
+    "@tiptap/pm": "^3.22.1",
+    "async-lock": "^1.4.1",
+    "better-sqlite3": "^12.8.0",
+    "diff": "^8.0.4",
+    "dotenv": "^16.5.0",
+    "file-type": "^21.3.4",
+    "fractional-indexing-jittered": "^1.0.0",
+    "hono": "^4.7.10",
+    "isomorphic-ws": "^5.0.0",
+    "js-base64": "^3.7.8",
+    "js-sha256": "^0.11.1",
+    "ky": "^1.14.3",
+    "kysely": "^0.28.15",
+    "lodash-es": "^4.17.21",
+    "ms": "^2.1.3",
+    "semver": "^7.7.4",
+    "tus-js-client": "^4.3.1",
+    "ulid": "^3.0.2",
+    "yjs": "^13.6.30",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/ms": "^2.1.0",
+    "@types/node": "^22.15.0",
+    "@types/semver": "^7.7.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

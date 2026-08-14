@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SCI Colanode Bridge</title>
+  <style>
+    :root { color-scheme: light; --bg:#f6f4ef; --fg:#1c1b19; --muted:#5c574e; --line:#d9d3c7; --accent:#0f5c4c; --card:#fff; --danger:#8b1e1e; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:15px/1.45 system-ui,Segoe UI,sans-serif; background:var(--bg); color:var(--fg); }
+    main { max-width:720px; margin:0 auto; padding:2rem 1rem 4rem; }
+    h1 { font-size:1.4rem; margin:0 0 .35rem; }
+    h2 { font-size:1.05rem; margin:1.5rem 0 .5rem; }
+    p,label { color:var(--muted); }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:1rem 1.1rem; margin-top:1rem; }
+    label { display:block; margin:.7rem 0 .25rem; font-size:.85rem; }
+    input,textarea,select,button { font:inherit; }
+    input,textarea { width:100%; padding:.55rem .65rem; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    button { margin-top:.85rem; margin-right:.5rem; padding:.55rem .9rem; border:0; border-radius:6px; background:var(--accent); color:#fff; cursor:pointer; }
+    button.secondary { background:#ece8df; color:var(--fg); }
+    button.danger { background:var(--danger); }
+    .row { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+    .err { color:var(--danger); margin-top:.5rem; white-space:pre-wrap; }
+    .ok { color:var(--accent); margin-top:.5rem; white-space:pre-wrap; }
+    code,pre { font-family:ui-monospace,Consolas,monospace; font-size:.82rem; }
+    pre { background:#f0ebe2; padding:.75rem; border-radius:6px; overflow:auto; }
+    .hidden { display:none; }
+    .meta { font-size:.85rem; color:var(--muted); }
+    ul.keys { padding-left:1.1rem; margin:.4rem 0; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>SCI Colanode Bridge</h1>
+  <p class="meta" id="baseUrl"></p>
+
+  <section id="view-loading" class="card">Loading…</section>
+
+  <section id="view-bootstrap" class="card hidden">
+    <h2>First-time setup</h2>
+    <p>Create the master Colanode account for this bridge. You will use this email/password to administer all accounts later.</p>
+    <label>Label</label>
+    <input id="b_label" placeholder="My Colanode" />
+    <label>Colanode server URL (config)</label>
+    <input id="b_server" placeholder="https://host/apiclient/v1/config" required />
+    <label>Email</label>
+    <input id="b_email" type="email" required />
+    <label>Password</label>
+    <input id="b_password" type="password" required />
+    <label>Workspace ID (optional)</label>
+    <input id="b_workspace" />
+    <button id="b_submit">Create master account</button>
+    <div class="err" id="b_err"></div>
+    <div class="ok" id="b_ok"></div>
+  </section>
+
+  <section id="view-login" class="card hidden">
+    <h2>Admin login</h2>
+    <p>Sign in with a saved Colanode account email/password.</p>
+    <label>Email</label>
+    <input id="l_email" type="email" />
+    <label>Password</label>
+    <input id="l_password" type="password" />
+    <button id="l_submit">Login</button>
+    <div class="err" id="l_err"></div>
+  </section>
+
+  <section id="view-panel" class="hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <strong id="me_label"></strong>
+          <div class="meta" id="me_meta"></div>
+        </div>
+        <button class="secondary" id="logout">Logout</button>
+      </div>
+    </div>
+
+    <div class="card" id="accounts_card">
+      <h2>Accounts</h2>
+      <div id="accounts_list"></div>
+      <div id="create_box" class="hidden">
+        <h2>Add account</h2>
+        <label>Label</label>
+        <input id="c_label" />
+        <label>Server URL</label>
+        <input id="c_server" />
+        <label>Email</label>
+        <input id="c_email" type="email" />
+        <label>Password</label>
+        <input id="c_password" type="password" />
+        <label>Workspace ID (optional)</label>
+        <input id="c_workspace" />
+        <button id="c_submit">Create account</button>
+        <div class="err" id="c_err"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Edit selected account</h2>
+      <input type="hidden" id="e_id" />
+      <label>Label</label>
+      <input id="e_label" />
+      <label>Server URL</label>
+      <input id="e_server" />
+      <label>Email</label>
+      <input id="e_email" type="email" />
+      <label>New password (leave blank to keep)</label>
+      <input id="e_password" type="password" />
+      <label>Workspace ID</label>
+      <input id="e_workspace" />
+      <button id="e_save">Save</button>
+      <div class="err" id="e_err"></div>
+      <div class="ok" id="e_ok"></div>
+
+      <h2>API keys</h2>
+      <ul class="keys" id="keys_list"></ul>
+      <label>New key name</label>
+      <input id="k_name" value="cursor" />
+      <button id="k_create">Generate API key</button>
+      <div class="ok" id="k_ok"></div>
+      <div class="err" id="k_err"></div>
+      <h2>mcp.json</h2>
+      <pre id="mcp_box">Generate a key to see the snippet.</pre>
+    </div>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const show = (id) => { ["view-loading","view-bootstrap","view-login","view-panel"].forEach(v => $(v).classList.toggle("hidden", v !== id)); };
+let state = { me: null, accounts: [], selected: null };
+
+async function api(path, opts={}) {
+  const res = await fetch(path, {
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json", ...(opts.headers||{}) },
+    ...opts,
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { detail: text }; }
+  if (!res.ok) throw new Error(typeof data?.detail === "string" ? data.detail : JSON.stringify(data?.detail || data));
+  return data;
+}
+
+function renderAccounts() {
+  const box = $("accounts_list");
+  box.innerHTML = "";
+  state.accounts.forEach(acc => {
+    const btn = document.createElement("button");
+    btn.className = "secondary";
+    btn.textContent = `${acc.label} (${acc.email})${acc.is_master ? " · master" : ""}`;
+    btn.onclick = () => selectAccount(acc.id);
+    box.appendChild(btn);
+  });
+  $("create_box").classList.toggle("hidden", !state.me?.is_master);
+}
+
+function selectAccount(id) {
+  const acc = state.accounts.find(a => a.id === id) || state.me;
+  state.selected = acc;
+  $("e_id").value = acc.id;
+  $("e_label").value = acc.label || "";
+  $("e_server").value = acc.server_url || "";
+  $("e_email").value = acc.email || "";
+  $("e_password").value = "";
+  $("e_workspace").value = acc.workspace_id || "";
+  const ul = $("keys_list");
+  ul.innerHTML = "";
+  (acc.api_keys || []).forEach(k => {
+    const li = document.createElement("li");
+    li.innerHTML = `<code>${k.prefix}…</code> ${k.name || ""} `;
+    const del = document.createElement("button");
+    del.className = "danger";
+    del.textContent = "Revoke";
+    del.onclick = async () => {
+      try {
+        const data = await api(`/api/admin/accounts/${acc.id}/api-keys/${k.id}`, { method: "DELETE" });
+        await refreshAccounts(data.account.id);
+      } catch (e) { $("k_err").textContent = e.message; }
+    };
+    li.appendChild(del);
+    ul.appendChild(li);
+  });
+  $("mcp_box").textContent = "Generate a key to copy a ready mcp.json (secret shown once).";
+}
+
+async function refreshAccounts(selectId) {
+  const data = await api("/api/admin/accounts");
+  state.me = data.me;
+  state.accounts = data.accounts;
+  $("me_label").textContent = state.me.label;
+  $("me_meta").textContent = `${state.me.email}${state.me.is_master ? " · master" : ""}`;
+  renderAccounts();
+  selectAccount(selectId || state.me.id);
+  show("view-panel");
+}
+
+async function boot() {
+  try {
+    const st = await api("/api/admin/status");
+    $("baseUrl").textContent = st.public_base_url || "";
+    if (!st.bootstrapped) { show("view-bootstrap"); return; }
+    if (st.me) { await refreshAccounts(st.me.id); return; }
+    show("view-login");
+  } catch (e) {
+    $("view-loading").textContent = e.message;
+  }
+}
+
+$("b_submit").onclick = async () => {
+  $("b_err").textContent = ""; $("b_ok").textContent = "";
+  try {
+    const data = await api("/api/admin/bootstrap", {
+      method: "POST",
+      body: JSON.stringify({
+        label: $("b_label").value,
+        server_url: $("b_server").value,
+        email: $("b_email").value,
+        password: $("b_password").value,
+        workspace_id: $("b_workspace").value || null,
+      }),
+    });
+    $("b_ok").textContent = "Master created. API key (copy now):\n" + data.api_key;
+    $("mcp_box") && ($("mcp_box").textContent = JSON.stringify(data.mcp_snippet, null, 2));
+    await refreshAccounts(data.account.id);
+    $("mcp_box").textContent = JSON.stringify(data.mcp_snippet, null, 2);
+  } catch (e) { $("b_err").textContent = e.message; }
+};
+
+$("l_submit").onclick = async () => {
+  $("l_err").textContent = "";
+  try {
+    await api("/api/admin/login", {
+      method: "POST",
+      body: JSON.stringify({ email: $("l_email").value, password: $("l_password").value }),
+    });
+    await refreshAccounts();
+  } catch (e) { $("l_err").textContent = e.message; }
+};
+
+$("logout").onclick = async () => {
+  await api("/api/admin/logout", { method: "POST", body: "{}" });
+  show("view-login");
+};
+
+$("c_submit").onclick = async () => {
+  $("c_err").textContent = "";
+  try {
+    const data = await api("/api/admin/accounts", {
+      method: "POST",
+      body: JSON.stringify({
+        label: $("c_label").value,
+        server_url: $("c_server").value,
+        email: $("c_email").value,
+        password: $("c_password").value,
+        workspace_id: $("c_workspace").value || null,
+      }),
+    });
+    await refreshAccounts(data.account.id);
+  } catch (e) { $("c_err").textContent = e.message; }
+};
+
+$("e_save").onclick = async () => {
+  $("e_err").textContent = ""; $("e_ok").textContent = "";
+  const id = $("e_id").value;
+  try {
+    const body = {
+      label: $("e_label").value,
+      server_url: $("e_server").value,
+      email: $("e_email").value,
+      workspace_id: $("e_workspace").value,
+    };
+    if ($("e_password").value) body.password = $("e_password").value;
+    const data = await api(`/api/admin/accounts/${id}`, { method: "PUT", body: JSON.stringify(body) });
+    $("e_ok").textContent = "Saved.";
+    await refreshAccounts(data.account.id);
+  } catch (e) { $("e_err").textContent = e.message; }
+};
+
+$("k_create").onclick = async () => {
+  $("k_err").textContent = ""; $("k_ok").textContent = "";
+  const id = $("e_id").value;
+  try {
+    const data = await api(`/api/admin/accounts/${id}/api-keys`, {
+      method: "POST",
+      body: JSON.stringify({ name: $("k_name").value || "default" }),
+    });
+    $("k_ok").textContent = "API key (copy now):\n" + data.api_key;
+    $("mcp_box").textContent = JSON.stringify(data.mcp_snippet, null, 2);
+    await refreshAccounts(id);
+    $("mcp_box").textContent = JSON.stringify(data.mcp_snippet, null, 2);
+    $("k_ok").textContent = "API key (copy now):\n" + data.api_key;
+  } catch (e) { $("k_err").textContent = e.message; }
+};
+
+boot();
+</script>
+</body>
+</html>
