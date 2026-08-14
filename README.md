@@ -188,4 +188,6 @@ Colanode pin: **v0.4.7** (see `vendor/README.md` and `Dockerfile`).
 
 ## License
 
-Proprietary — SCI Marketing. All rights reserved.
+SCI Colanode Bridge is licensed under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE) for third-party attribution.
+
+Colanode (`@colanode/client` and the tree cloned at Docker build) remains Apache 2.0, copyright the Colanode authors. Other Python and Node dependencies keep their own licenses.

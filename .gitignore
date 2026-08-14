@@ -27,6 +27,9 @@ data/
 *.xlsx
 scripts/audit_*
 
+# Local drafts (not for the repo)
+local/
+
 # Node
 sidecar/node_modules/
 sidecar/dist/

@@ -28,7 +28,7 @@ RUN apt-get update \
 WORKDIR /app
 
 COPY --from=vendor /opt/colanode /app/vendor/colanode
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md LICENSE NOTICE ./
 COPY src ./src
 COPY sidecar ./sidecar
 

@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "sci-colanode-api"
 version = "0.0.1"
 description = "SCI Marketing internal Colanode MCP/REST bridge (Python + Node sidecar)"
+license = "Apache-2.0"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -42,4 +43,6 @@ include = [
   "src/sci_colanode_api",
   "sidecar",
   "README.md",
+  "LICENSE",
+  "NOTICE",
 ]
