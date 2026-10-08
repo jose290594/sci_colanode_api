@@ -2,10 +2,11 @@ services:
   bridge:
     build: .
     ports:
-      - "8786:8786"
+      - "${BRIDGE_BIND:-127.0.0.1}:8786:8786"
     environment:
       BRIDGE_HOST: "0.0.0.0"
       BRIDGE_PORT: "8786"
+      FORWARDED_ALLOW_IPS: "${FORWARDED_ALLOW_IPS:-*}"
       BRIDGE_SECRET: "${BRIDGE_SECRET:?set BRIDGE_SECRET}"
       PUBLIC_BASE_URL: "${PUBLIC_BASE_URL:-http://127.0.0.1:8786}"
       COLANODE_DATA_DIR: /data

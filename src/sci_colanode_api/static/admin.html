@@ -129,9 +129,10 @@
 const $ = (id) => document.getElementById(id);
 const show = (id) => { ["view-loading","view-bootstrap","view-login","view-panel"].forEach(v => $(v).classList.toggle("hidden", v !== id)); };
 let state = { me: null, accounts: [], selected: null };
+const BASE = location.pathname.replace(/\/admin\/?$/, "");
 
 async function api(path, opts={}) {
-  const res = await fetch(path, {
+  const res = await fetch(BASE + path, {
     credentials: "same-origin",
     headers: { "Content-Type": "application/json", ...(opts.headers||{}) },
     ...opts,

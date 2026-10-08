@@ -18,6 +18,7 @@
     "@tiptap/pm": "^3.22.1",
     "async-lock": "^1.4.1",
     "better-sqlite3": "^12.8.0",
+    "debug": "^4.4.3",
     "diff": "^8.0.4",
     "dotenv": "^16.5.0",
     "file-type": "^21.3.4",

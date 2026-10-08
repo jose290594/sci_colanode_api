@@ -74,7 +74,7 @@ def create_app() -> FastAPI:
 
     @app.get("/admin/")
     async def admin_page_slash() -> RedirectResponse:
-        return RedirectResponse(url="/admin", status_code=307)
+        return RedirectResponse(url="../admin", status_code=307)
 
     return app
 
